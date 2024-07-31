@@ -1,31 +1,23 @@
-#MCQ generator project
-    
 import streamlit as st
 import json
 import os
 from dotenv import load_dotenv
 
-load_dotenv() # load all the environment variables from .env file
+load_dotenv()  # Load all the environment variables from .env file
 
+from g4f.client import Client
 
+client = Client()
 
-from openai import OpenAI                      #import OpenAI class from openai package 
-OpenAI.api_key = os.getenv("OPENAI_API_KEY")   #fetch the openai key from env file
-client = OpenAI()                              #create a object of the class OpenAI
-
-
-
-# call openai api for get the questions by passing parameter as text_content and quiz_level that are provided by the user
-
-@st.cache_data         # don't want to call openai each time when the stream lit page is refreshed
+# Call OpenAI API to get the questions by passing parameter as text_content and quiz_level provided by the user
+@st.cache_data  # Don't want to call OpenAI each time when the Streamlit page is refreshed
 def fetch_questions(text_content, quiz_level):
-    
-    #response mcq format
+    # Response MCQ format
     RESPONSE_JSON = {
-        "mcqs" : [
+        "mcqs": [
             {
                 "mcq": "multiple choice question1",
-                "options":{
+                "options": {
                     "a": "choice here1",
                     "b": "choice here2",
                     "c": "choice here3",
@@ -35,7 +27,7 @@ def fetch_questions(text_content, quiz_level):
             },
             {
                 "mcq": "multiple choice question2",
-                "options":{
+                "options": {
                     "a": "choice here1",
                     "b": "choice here2",
                     "c": "choice here3",
@@ -45,7 +37,7 @@ def fetch_questions(text_content, quiz_level):
             },
             {
                 "mcq": "multiple choice question3",
-                "options":{
+                "options": {
                     "a": "choice here1",
                     "b": "choice here2",
                     "c": "choice here3",
@@ -55,9 +47,9 @@ def fetch_questions(text_content, quiz_level):
             }
         ]
     }
-    # promt for the openai to make MCQ
 
-    PROMPT_TEMPLATE="""
+    # Prompt for OpenAI to make MCQ
+    PROMPT_TEMPLATE = """
     Text: {text_content}
     You are an expert in generating MCQ type quiz on the basis of provided content.
     Given the above text, create a quiz of 3 multiple choice questions keeping difficulty level as {quiz_level}.
@@ -66,54 +58,64 @@ def fetch_questions(text_content, quiz_level):
     Here is the RESPONSE_JSON:
 
     {RESPONSE_JSON}
-
     """
 
-    formatted_template = PROMPT_TEMPLATE.format(text_content=text_content, quiz_level=quiz_level,RESPONSE_JSON=RESPONSE_JSON) 
+    formatted_template = PROMPT_TEMPLATE.format(text_content=text_content, quiz_level=quiz_level, RESPONSE_JSON=json.dumps(RESPONSE_JSON))
 
-    #make API request
-    response = client.chat.completions.create(model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role":"user",
-                "content": formatted_template
-            }
-        ],
-        temperature=0.3,
-        max_tokens=1000,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0                                             
+    # Make API request
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": formatted_template}],
+        # temperature=0.3,
+        # max_tokens=1000,
+        # top_p=1,
+        # frequency_penalty=0,
+        # presence_penalty=0
     )
 
-    #Extract response JSON
-    extracted_response = response.choices[0].message.content
+    # Print the entire API response for debugging
+    print("API Response:", response)
 
-    print(extracted_response)
+    if not response or not response.choices:
+        st.error("Empty response from API")
+        return []
 
-    return json.loads(extracted_response).get("mcq",[])
+    extracted_response = response.choices[0].message.content.strip()
+
+    print("Extracted Response:", extracted_response)  # Debugging: Print the raw response
+
+    # Extract the JSON part of the response
+    try:
+        json_start_index = extracted_response.find('{')
+        json_end_index = extracted_response.rfind('}') + 1
+        json_str = extracted_response[json_start_index:json_end_index]
+
+        return json.loads(json_str).get("mcqs", [])
+    except json.JSONDecodeError as e:
+        st.error(f"Error decoding JSON: {e}")
+        return []
+    except Exception as e:
+        st.error(f"Unexpected error: {e}")
+        return []
 
 
-#main method
-
+# Main method
 def main():
-
-    #streamlit is used for the frontent
     st.title("MCQ Generator App")
 
-    #text input for user to paste content
+    # Text input for user to paste content
     text_content = st.text_area("Paste the text content here:")
 
-    #Dropdown for selecting quiz level
-    quiz_level = st.selectbox("Select MCQ level:",["Easy","Medium","Head"])
+    # Dropdown for selecting quiz level
+    quiz_level = st.selectbox("Select MCQ level:", ["Easy", "Medium", "Hard"])
 
-    #Convert Quiz level to lower casing
+    # Convert Quiz level to lower casing
     quiz_level_lower = quiz_level.lower()
 
-    #Initialize session_state
+    # Initialize session_state
     session_state = st.session_state
 
-    #check if quiz_generated flag exists in session_state, if not initialize it 
+    # Check if quiz_generated flag exists in session_state, if not initialize it
     if 'quiz_generated' not in session_state:
         session_state.quiz_generated = False
 
@@ -121,12 +123,11 @@ def main():
     if not session_state.quiz_generated:
         session_state.quiz_generated = st.button("Generate Quiz")
 
-
     if session_state.quiz_generated:
-        #define question and options
-        questions = fetch_questions(text_content=text_content,quiz_level=quiz_level_lower)
+        # Define question and options
+        questions = fetch_questions(text_content=text_content, quiz_level=quiz_level_lower)
 
-        #Display questions and radio buttons
+        # Display questions and radio buttons
         selected_options = []
         correct_answers = []
         for question in questions:
@@ -135,26 +136,23 @@ def main():
             selected_options.append(selected_option)
             correct_answers.append(question["options"][question["correct"]])
 
-        #submit button
+        # Submit button
         if st.button("Submit"):
-            #display selected options
+            # Display selected options
             marks = 0
-            st.header("Result: ")
+            st.header("Result:")
             for i, question in enumerate(questions):
-                selected_option = selected_option[i]
+                selected_option = selected_options[i]
                 correct_option = correct_answers[i]
 
                 st.subheader(f"{question['mcq']}")
-                st.write(f"You selected:{selected_option}")
-                st.write(f"Correct answer:{correct_option}")
+                st.write(f"You selected: {selected_option}")
+                st.write(f"Correct answer: {correct_option}")
 
                 if selected_option == correct_option:
-                    marks +=1
-            st.subheader(f"Yow scored {marks} out of {len(questions)}")
+                    marks += 1
+            st.subheader(f"You scored {marks} out of {len(questions)}")
+
 
 if __name__ == "__main__":
     main()
-
-
-
-
