@@ -9,8 +9,8 @@ from g4f.client import Client
 
 client = Client()
 
-# Call OpenAI API to get the questions by passing parameter as text_content and quiz_level provided by the user
-@st.cache_data  # Don't want to call OpenAI each time when the Streamlit page is refreshed
+# Call API to get the questions by passing parameter as text_content and quiz_level provided by the user
+@st.cache_data  # Don't want to call AI each time when the Streamlit page is refreshed
 def fetch_questions(text_content, quiz_level):
     # Response MCQ format
     RESPONSE_JSON = {
@@ -48,7 +48,7 @@ def fetch_questions(text_content, quiz_level):
         ]
     }
 
-    # Prompt for OpenAI to make MCQ
+    # Prompt for AI to make MCQ
     PROMPT_TEMPLATE = """
     Text: {text_content}
     You are an expert in generating MCQ type quiz on the basis of provided content.
