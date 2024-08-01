@@ -60,7 +60,8 @@ Once the application is running, you can use the web interface to input text and
 ## Deployment
 The application can be deployed on Streamlit's cloud platform. The live version of the app is available at [MCQ Generator App](https://adarshmadhusoodanan-mcq-generator-main-dmk1ie.streamlit.app/).
 
-![Deployed App](https://adarshmadhusoodanan-mcq-generator-main-dmk1ie.streamlit.app/)
+![image](https://github.com/user-attachments/assets/1892e0eb-6050-4860-8cb2-1a4242b9157e)
+
 
 To deploy your own version:
 
