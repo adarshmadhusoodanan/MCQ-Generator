@@ -16,32 +16,32 @@ def fetch_questions(text_content, quiz_level):
     RESPONSE_JSON = {
         "mcqs": [
             {
-                "mcq": "multiple choice question1",
+                "mcq": "multiple choice question",
                 "options": {
-                    "a": "choice here1",
-                    "b": "choice here2",
-                    "c": "choice here3",
-                    "d": "choice here4",
+                    "a": "choice here",
+                    "b": "choice here",
+                    "c": "choice here",
+                    "d": "choice here",
                 },
                 "correct": "correct choice option",
             },
             {
-                "mcq": "multiple choice question2",
+                "mcq": "multiple choice question",
                 "options": {
-                    "a": "choice here1",
-                    "b": "choice here2",
-                    "c": "choice here3",
-                    "d": "choice here4",
+                    "a": "choice here",
+                    "b": "choice here",
+                    "c": "choice here",
+                    "d": "choice here",
                 },
                 "correct": "correct choice option",
             },
             {
-                "mcq": "multiple choice question3",
+                "mcq": "multiple choice question",
                 "options": {
-                    "a": "choice here1",
-                    "b": "choice here2",
-                    "c": "choice here3",
-                    "d": "choice here4",
+                    "a": "choice here",
+                    "b": "choice here",
+                    "c": "choice here",
+                    "d": "choice here",
                 },
                 "correct": "correct choice option",
             }
