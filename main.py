@@ -121,7 +121,7 @@ def main():
 
     # Track if Generate Quiz button is clicked
     if not session_state.quiz_generated:
-        session_state.quiz_generated = st.button("Generate Quiz")
+        session_state.quiz_generated = st.button("Generate MCQ")
 
     if session_state.quiz_generated:
         # Define question and options
